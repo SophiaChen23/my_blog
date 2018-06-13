@@ -1,56 +1,67 @@
 {% load staticfiles%}
-<!doctype html>
 <html lang="en">
+<title>W3.CSS Template</title>
+<meta charset="UTF-8">
 <link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}css/pygments.css"/>
-<head>
-    <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="A layout example that shows off a blog page with a list of posts.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+<style>
+body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
+</style>
+<body class="w3-light-grey">
 
-    <title>Sophia Chen Blog</title>
-    <link rel="stylesheet" href="http://labfile.oss.aliyuncs.com/courses/487/pure-min.css">
-    <link rel="stylesheet" href="http://labfile.oss.aliyuncs.com/courses/487/grids-responsive-min.css">
-    <link rel="stylesheet" href="http://labfile.oss.aliyuncs.com/courses/487/blog.css">
+<!-- w3-content defines a container for fixed size centered content, 
+and is wrapped around the whole page content, except for the footer in this example -->
+<div class="w3-content" style="max-width:1400px">
+<header class="w3-container w3-center w3-padding-32"> 
+  <h1><b>MY BLOG</b></h1>
+  <p>Welcome to the blog of <span class="w3-tag">Sophia Chen Blog</span></p>
+</header>
 
-</head>
-<body>
-<div id="layout" class="pure-g">
-    <div class="sidebar pure-u-1 pure-u-md-1-4">
-        <div class="header">
-            <h1 class="brand-title"><a href="{% url "home" %}">Sophia Chen Blog</a></h1>
-            <h2 class="brand-tagline">Day by Day</h2>
-            <nav class="nav">
-                <ul class="nav-list">
-                    <li class="nav-item">
-                        <a class="button-success pure-button" href="{% url "home" %}" >Home</a>
-                    </li>
-                    <li class="nav-item"> 
-                        <a class="button-success pure-button" href="{% url "archives" %}">Archive</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="pure-button" href="https://github.com/SophiaChen23">Github</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="pure-button" href="https://www.linkedin.com/in/zhihe-chen-37b240121/">Linkdin</a>
-                    </li>
-                    
-                    <li class="nav-item">
-                        <a class="button-success pure-button" href="/">Pages</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="button-success pure-button" href="{% url "about_me" %}">About Me</a>
-                    </li>
-
-                    <li>
-                    <form class="pure-form" action="/search/" method="get">
-                    <input class="pure-input-3-3" type="text" name="s" placeholder="search">
-                    </form>
-                    </li>
-
-                </ul>
-            </nav>
-        </div>
+<!-- Grid -->
+<div class="w3-row">
+<div  class="w3-col l4">
+    <!-- About Card -->
+  <div class="w3-card w3-margin w3-margin-top">
+  <img src="/w3images/avatar_g.jpg" style="width:100%">
+    <div class="w3-container w3-white">
+      <h4><b>My Name</b></h4>
+      <p>Just me, myself and I, exploring the universe of uknownment. I have a heart of love and a interest of lorem ipsum and mauris neque quam blog. I want to share my world with you.</p>
     </div>
+  </div><hr>    
+        
+    <div class="w3-card w3-margin">
+        <ul class="w3-ul w3-hoverable w3-white">
+            <li class="w3-padding-16">
+                <a class="w3-large" href="{% url "home" %}" >Home</a>
+            </li>
+            <li class="w3-padding-16"> 
+                 <a class="w3-large" href="{% url "archives" %}">Archive</a>
+            </li>
+            <li class="w3-padding-16">
+                  <a class="w3-large" href="https://github.com/SophiaChen23">Github</a>
+            </li>
+            <li class="w3-padding-16">
+                <a class="w3-large" href="https://www.linkedin.com/in/zhihe-chen-37b240121/">Linkdin</a>
+            </li>
+                    
+            <li class="w3-padding-16">
+                <a class="button-success pure-button" href="/">Pages</a>
+            </li>
+            <li class="w3-padding-16">
+                <a class="button-success pure-button" href="{% url "about_me" %}">About Me</a>
+            </li>
+
+            <li>
+            <form class="pure-form" action="/search/" method="get">
+            <input class="pure-input-3-3" type="text" name="s" placeholder="search">
+            </form>
+            </li>
+
+        </ul>
+    </div>
+
 
 
     <div class="content pure-u-1 pure-u-md-3-4">
@@ -60,9 +71,7 @@
             <div class="footer">
                 <div class="pure-menu pure-menu-horizontal pure-menu-open">
                     <ul>
-                        <li><a href="http://andrewliu.tk/about/">About Me</a></li>
                         
-                        <li><a href="https://github.com/SophiaChen23">GitHub</a></li>
                     </ul>
                 </div>
             </div>

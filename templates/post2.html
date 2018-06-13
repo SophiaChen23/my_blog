@@ -1,0 +1,155 @@
+{% load custom_markdown %}
+<!DOCTYPE html>
+<html>
+<title>W3.CSS Template</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+<style>
+body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
+</style>
+<body class="w3-pale-green">
+
+<!-- w3-content defines a container for fixed size centered content, 
+and is wrapped around the whole page content, except for the footer in this example -->
+<div class="w3-content" style="max-width:1400px">
+
+<!-- Header -->
+<header class="w3-container w3-center w3-padding-32"> 
+  <h1><b>MY BLOG</b></h1>
+  <p>Welcome to the blog of Sophia</p>
+</header>
+
+<!-- Grid -->
+<div class="w3-row">
+
+<!-- Blog entries -->
+<div class="w3-col l9 s12">
+  <!-- Blog entry -->
+  
+  <hr>
+  <section class="w3-card-4 w3-margin w3-white">
+            <header class="post-header">
+                <h2 class="post-title"><a href="{% url "detail" id=post_list.id %}">{{ post_list.title }}</a></h2>
+
+                    <p class="post-meta">
+                        Time:  <a class="post-author" href="#">{{ post_list.date_time |date:"Y /m /d"}}</a> <a class="post-category post-category-js" href="{% url "search_tag" tag=post_list.category %}">{{ post_list.category }}</a>
+                    </p>
+            </header>
+
+                 <div class="post-description">
+                    <p>
+                        {{ post_list.content|custom_markdown }}
+                    </p>
+                </div>
+  </section>       
+   
+<!-- END BLOG ENTRIES -->
+
+     {% if post_list.paginator.num_pages > 1 %}
+      <div>
+      <ul class="pager">
+      
+        <li><a href="?page={{ post_list.previous_page_number }}">Pre Page</a></li>
+      
+
+      
+        <li><a href="?page={{ post_list.next_page_number }}">Next Page</a></li>
+      
+      </ul>
+      </div>
+    {% endif %}
+    
+    <div class="w3-center w3-padding-32">
+    <div class="w3-bar">
+      {% for page in paginator_.page_range  %}
+      
+      <a href="{% url "pages" id=page %}" class="w3-bar-item w3-black w3-button">{{page}}</a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+
+<!-- Introduction menu -->
+<div class="w3-col l3">
+  <!-- Posts -->
+  <div class="w3-card w3-margin w3-margin-top">
+    
+    <ul class="w3-ul w3-hoverable w3-white">
+      <li class="w3-padding-16">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXdAMlty43EmaYReJIWcNNj_11_yn_XD0tMx8UlI0SO_Nf1CGf" alt="Image" class="w3-left w3-margin-right" style="width:30px">
+        <a class="w3-large" href="{% url "home" %}" >Home</a>
+      </li>
+      <li class="w3-padding-16">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTpcdQdwx9WlCe_E4edDTE_1KxOWkRR53lunVJ-wNk11S4c-fJO" alt="Image" class="w3-left w3-margin-right" style="width:30px">
+        <a class="w3-large" href="{% url "archives" %}">Archive</a>
+      </li> 
+      <li class="w3-padding-16">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" alt="Image" class="w3-left w3-margin-right" style="width:30px">
+        <a class="w3-large" href="https://github.com/SophiaChen23">Github</a>
+      </li>   
+      <li class="w3-padding-16 w3-hide-medium w3-hide-small">
+        <img src="https://cdn1.iconfinder.com/data/icons/logotypes/32/square-linkedin-512.png" alt="Image" class="w3-left w3-margin-right" style="width:30px">
+        <a class="w3-large" href="http://icons.iconarchive.com/icons/sicons/basic-round-social/256/linkedin-icon.png">Linkdin</a>
+      </li>  
+      <li>
+            <form class="pure-form" action="/search/" method="get">
+            <input class="pure-input-3-3" type="text" name="s" placeholder="search">
+            </form>
+      </li>
+    </ul>
+  </div>
+  <hr> 
+
+  <!-- About Card -->
+  <div class="w3-card w3-margin ">
+  <img src="https://avatars3.githubusercontent.com/u/32023274?s=400&v=4" style="width:100%"">
+    <div class="w3-container w3-white">
+      
+      <p>Just me, my name is Sophia,major in Computational Data Science and Computational Mathematicas, focues on Python and machine learning.</p>
+    </div>
+  </div><hr>
+  
+  
+  
+  
+  <!-- Labels / tags -->
+  <div class="w3-card w3-margin">
+    <div class="w3-container w3-padding">
+      <h4>Tags</h4>
+    </div>
+    <div class="w3-container w3-white">
+    <p>
+        {% for tag in tags %}
+        <section class="post">
+        <span class="w3-tag w3-light-grey w3-small w3-margin-bottom">         <a href="{% url "search_tag" tag=tag %}">{{ tag }} </a>
+        </span>
+        
+        {% endfor %}
+        
+            
+        
+     
+
+
+      
+    </p>
+    </div>
+  </div>
+  
+<!-- END Introduction Menu -->
+</div>
+
+<!-- END GRID -->
+</div><br>
+
+<!-- END w3-content -->
+</div>
+
+
+
+</body>
+</html>
+

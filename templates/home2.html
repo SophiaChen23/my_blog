@@ -1,0 +1,454 @@
+{% load custom_markdown %}
+<!DOCTYPE html>
+<html>
+<title></title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+<style>
+body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
+</style>
+
+<body class="w3-pale-green">
+
+<!-- w3-content defines a container for fixed size centered content, 
+and is wrapped around the whole page content, except for the footer in this example -->
+<div class="w3-content" style="max-width:1400px">
+
+<!-- Header -->
+<header class="w3-container w3-center w3-padding-32"> 
+  
+<canvas id="c"></canvas>
+
+
+
+<div id="info">
+  <div id="top">
+    <a id="close" href="">&times;</a>
+  </div>
+<script>
+document.getElementById('close').onmousedown = function(e) {
+  e.preventDefault();
+  document.getElementById('info').style.display = 'none';
+  return false;
+};
+
+// settings
+
+var physics_accuracy  = 3,
+    mouse_influence   = 20,
+    mouse_cut         = 5,
+    gravity           = 1200,
+    cloth_height      = 30,
+    cloth_width       = 80,
+    start_y           = 20,
+    spacing           = 7,
+    tear_distance     = 60;
+
+
+window.requestAnimFrame =
+    window.requestAnimationFrame ||
+    window.webkitRequestAnimationFrame ||
+    window.mozRequestAnimationFrame ||
+    window.oRequestAnimationFrame ||
+    window.msRequestAnimationFrame ||
+    function (callback) {
+        window.setTimeout(callback, 1000 / 60);
+};
+
+var canvas,
+    ctx,
+    cloth,
+    boundsx,
+    boundsy,
+    mouse = {
+        down: false,
+        button: 1,
+        x: 0,
+        y: 0,
+        px: 0,
+        py: 0
+    };
+
+var Point = function (x, y) {
+
+    this.x      = x;
+    this.y      = y;
+    this.px     = x;
+    this.py     = y;
+    this.vx     = 0;
+    this.vy     = 0;
+    this.pin_x  = null;
+    this.pin_y  = null;
+    
+    this.constraints = [];
+};
+
+Point.prototype.update = function (delta) {
+
+    if (mouse.down) {
+
+        var diff_x = this.x - mouse.x,
+            diff_y = this.y - mouse.y,
+            dist = Math.sqrt(diff_x * diff_x + diff_y * diff_y);
+
+        if (mouse.button == 1) {
+
+            if (dist < mouse_influence) {
+                this.px = this.x - (mouse.x - mouse.px) * 1.8;
+                this.py = this.y - (mouse.y - mouse.py) * 1.8;
+            }
+
+        } else if (dist < mouse_cut) this.constraints = [];
+    }
+
+    this.add_force(0, gravity);
+
+    delta *= delta;
+    nx = this.x + ((this.x - this.px) * .99) + ((this.vx / 2) * delta);
+    ny = this.y + ((this.y - this.py) * .99) + ((this.vy / 2) * delta);
+
+    this.px = this.x;
+    this.py = this.y;
+
+    this.x = nx;
+    this.y = ny;
+
+    this.vy = this.vx = 0
+};
+
+Point.prototype.draw = function () {
+
+    if (!this.constraints.length) return;
+
+    var i = this.constraints.length;
+    while (i--) this.constraints[i].draw();
+};
+
+Point.prototype.resolve_constraints = function () {
+
+    if (this.pin_x != null && this.pin_y != null) {
+
+        this.x = this.pin_x;
+        this.y = this.pin_y;
+        return;
+    }
+
+    var i = this.constraints.length;
+    while (i--) this.constraints[i].resolve();
+
+    this.x > boundsx ? this.x = 2 * boundsx - this.x : 1 > this.x && (this.x = 2 - this.x);
+    this.y < 1 ? this.y = 2 - this.y : this.y > boundsy && (this.y = 2 * boundsy - this.y);
+};
+
+Point.prototype.attach = function (point) {
+
+    this.constraints.push(
+        new Constraint(this, point)
+    );
+};
+
+Point.prototype.remove_constraint = function (constraint) {
+
+    this.constraints.splice(this.constraints.indexOf(constraint), 1);
+};
+
+Point.prototype.add_force = function (x, y) {
+
+    this.vx += x;
+    this.vy += y;
+};
+
+Point.prototype.pin = function (pinx, piny) {
+    this.pin_x = pinx;
+    this.pin_y = piny;
+};
+
+var Constraint = function (p1, p2) {
+
+    this.p1     = p1;
+    this.p2     = p2;
+    this.length = spacing;
+};
+
+Constraint.prototype.resolve = function () {
+
+    var diff_x  = this.p1.x - this.p2.x,
+        diff_y  = this.p1.y - this.p2.y,
+        dist    = Math.sqrt(diff_x * diff_x + diff_y * diff_y),
+        diff    = (this.length - dist) / dist;
+
+    if (dist > tear_distance) this.p1.remove_constraint(this);
+
+    var px = diff_x * diff * 0.5;
+    var py = diff_y * diff * 0.5;
+
+    this.p1.x += px;
+    this.p1.y += py;
+    this.p2.x -= px;
+    this.p2.y -= py;
+};
+
+Constraint.prototype.draw = function () {
+
+    ctx.moveTo(this.p1.x, this.p1.y);
+    ctx.lineTo(this.p2.x, this.p2.y);
+};
+
+var Cloth = function () {
+
+    this.points = [];
+
+    var start_x = canvas.width / 2 - cloth_width * spacing / 2;
+
+    for (var y = 0; y <= cloth_height; y++) {
+
+        for (var x = 0; x <= cloth_width; x++) {
+
+            var p = new Point(start_x + x * spacing, start_y + y * spacing);
+
+            x != 0 && p.attach(this.points[this.points.length - 1]);
+            y == 0 && p.pin(p.x, p.y);
+            y != 0 && p.attach(this.points[x + (y - 1) * (cloth_width + 1)])
+
+            this.points.push(p);
+        }
+    }
+};
+
+Cloth.prototype.update = function () {
+
+    var i = physics_accuracy;
+
+    while (i--) {
+        var p = this.points.length;
+        while (p--) this.points[p].resolve_constraints();
+    }
+
+    i = this.points.length;
+    while (i--) this.points[i].update(.016);
+};
+
+Cloth.prototype.draw = function () {
+
+    ctx.beginPath();
+
+    var i = cloth.points.length;
+    while (i--) cloth.points[i].draw();
+
+    ctx.stroke();
+};
+
+function update() {
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    cloth.update();
+    cloth.draw();
+
+    requestAnimFrame(update);
+}
+
+function start() {
+
+    canvas.onmousedown = function (e) {
+        mouse.button  = e.which;
+        mouse.px      = mouse.x;
+        mouse.py      = mouse.y;
+        var rect      = canvas.getBoundingClientRect();
+        mouse.x       = e.clientX - rect.left,
+        mouse.y       = e.clientY - rect.top,
+        mouse.down    = true;
+        e.preventDefault();
+    };
+
+    canvas.onmouseup = function (e) {
+        mouse.down = false;
+        e.preventDefault();
+    };
+
+    canvas.onmousemove = function (e) {
+        mouse.px  = mouse.x;
+        mouse.py  = mouse.y;
+        var rect  = canvas.getBoundingClientRect();
+        mouse.x   = e.clientX - rect.left,
+        mouse.y   = e.clientY - rect.top,
+        e.preventDefault();
+    };
+
+    canvas.oncontextmenu = function (e) {
+        e.preventDefault();
+    };
+
+    boundsx = canvas.width - 1;
+    boundsy = canvas.height - 1;
+
+    ctx.strokeStyle = '#888';
+  
+    cloth = new Cloth();
+  
+    update();
+}
+
+window.onload = function () {
+
+    canvas  = document.getElementById('c');
+    ctx     = canvas.getContext('2d');
+
+    canvas.width  = 680;
+    canvas.height = 230;
+
+    start();
+};
+</script>
+</header>
+
+
+<!-- Grid -->
+<div class="w3-row">
+
+
+<!-- Blog entries -->
+<div class="w3-col l9 s12">
+  <!-- Blog entry -->
+  
+  <hr>
+
+  <!-- Blog entry -->
+  {% for post in post_list %}
+        <section class="w3-card-4 w3-margin w3-white">
+            <header class="post-header w3-margin">
+                <h2 class="post-title w3-hover-text-green"><a href="{% url "detail" id=post.id %}">{{ post.title }}</a></h2>
+
+                    <p class="post-meta">
+                        Time:  <a class="post-author" href="#">{{ post.date_time |date:"Y /m /d"}}</a> <a class="post-category post-category-js" href="{% url "search_tag" tag=post.category %}">{{ post.category }}</a>
+                    </p>
+            </header>
+
+                <div class="post-description w3-margin">
+                    <p>
+                        {{ post.content|custom_markdown|truncatewords_html:20 }}
+}
+                    </p>
+                </div>
+                <a class="pure-button w3-margin" href="{% url "detail" id=post.id %}">Read More >>> </a>
+        </section>
+    {% endfor %}
+    {% if post_list.object_list and post_list.paginator.num_pages > 1 %}
+      <div>
+      <ul class="pager">
+      {% if post_list.has_previous %}
+        <li><a href="?page={{ post_list.previous_page_number }}">Pre Page</a></li>
+      {% endif %}
+
+      {% if post_list.has_next %}
+        <li><a href="?page={{ post_list.next_page_number }}">Next Page</a></li>
+      {% endif %}
+      </ul>
+      </div>
+    {% endif %}
+<!-- END BLOG ENTRIES -->
+  <div class="w3-center w3-padding-32">
+    <div class="w3-bar">
+      {% for page in paginator_.page_range  %}
+      
+      <a href="{% url "pages" id=page %}" class="w3-bar-item w3-black w3-button">{{page}}</a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Introduction menu -->
+<div class="w3-col l3">
+
+  <div class="w3-card w3-margin w3-margin-top ">
+    <div class="w3-container w3-padding">
+      <h2> <p class="w3-container w3-green">Daily Blog </p></h2>
+    </div>
+    <div class="w3-container w3-white">
+      
+      <p>Welcome to the blog of <p class="w3-hover-text-green">Sophia !!!</p></p>
+    </div>
+  </div>
+  <hr>
+  <!-- Posts -->
+  <div class="w3-card w3-margin w3-margin">
+    
+    <ul class="w3-ul w3-hoverable w3-white">
+      <li class="w3-padding-16">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXdAMlty43EmaYReJIWcNNj_11_yn_XD0tMx8UlI0SO_Nf1CGf" alt="Image" class="w3-left w3-margin-right" style="width:30px">
+        <a class="w3-large" href="{% url "home" %}" >Home</a>
+      </li>
+      <li class="w3-padding-16">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTpcdQdwx9WlCe_E4edDTE_1KxOWkRR53lunVJ-wNk11S4c-fJO" alt="Image" class="w3-left w3-margin-right" style="width:30px">
+        <a class="w3-large" href="{% url "archives" %}">Archive</a>
+      </li> 
+      <li class="w3-padding-16">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" alt="Image" class="w3-left w3-margin-right" style="width:30px">
+        <a class="w3-large" href="https://github.com/SophiaChen23">Github</a>
+      </li>   
+      <li class="w3-padding-16 w3-hide-medium w3-hide-small">
+        <img src="https://cdn1.iconfinder.com/data/icons/logotypes/32/square-linkedin-512.png" alt="Image" class="w3-left w3-margin-right" style="width:30px">
+        <a class="w3-large" href="https://www.linkedin.com/in/zhihe-chen-37b240121/">Linkdin</a>
+      </li>  
+      <li>
+            <form class="pure-form" action="/search/" method="get">
+            <input class="pure-input-3-3" type="text" name="s" placeholder="search">
+            </form>
+      </li>
+    </ul>
+  </div>
+  <hr> 
+
+  <!-- About Card -->
+  <div class="w3-card w3-margin ">
+  <img src="https://avatars3.githubusercontent.com/u/32023274?s=400&v=4" style="width:100%"">
+    <div class="w3-container w3-white">
+      
+      <p>Just me, my name is Sophia,major in Computational Data Science and Computational Mathematicas, focues on Python and machine learning.</p>
+    </div>
+  </div><hr>
+
+  
+  
+  
+  
+  
+  <!-- Labels / tags -->
+  <div class="w3-card w3-margin">
+    <div class="w3-container w3-padding">
+      <h4>Tags</h4>
+    </div>
+    <div class="w3-container w3-white">
+    <p>
+        {% for tag in tags %}
+        <section class="post">
+        <span class="w3-tag w3-light-grey w3-small w3-margin-bottom">         <a href="{% url "search_tag" tag=tag %}">{{ tag }} </a>
+        </span>
+        
+        {% endfor %}
+        
+            
+        
+     
+
+
+      
+    </p>
+    </div>
+  </div>
+  
+<!-- END Introduction Menu -->
+</div>
+
+<!-- END GRID -->
+</div><br>
+
+<!-- END w3-content -->
+</div>
+
+
+
+</body>
+</html>

@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "home2.html" %}
 
 {% block content %}
 <div class="posts">
@@ -6,7 +6,7 @@
         <h2 class="post-title">NOT Found</a></h2>
     {% else %}
 
-    {% for post in post_list %}
+    {% for post in tags   %}
 
         <section class="post">
             <header class="post-header">
