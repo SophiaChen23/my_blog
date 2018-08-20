@@ -15,7 +15,7 @@ urlpatterns = [
    
     url(r'^tag(?P<tag>\w+)/$', views.search_tag, name = 'search_tag'),
     url(r'^search/$',views.blog_search, name = 'search'),
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', admin.site.urls),
     url(r'^page(?P<id>\w+)/$', views.pages, name = 'pages'),  
 
 
